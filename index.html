@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>LocalPasses</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f0e17;
+            color: #fffffe;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: #1a1a2e;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            border: 1px solid #2a2a4a;
+            min-height: 500px;
+        }
+
+        /* ===== БЛОК ВВОДА МАСТЕР-ПАРОЛЯ ===== */
+        #unlockSection {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #2a2a4a;
+        }
+
+        #unlockSection .lock-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        #unlockSection h2 {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        #unlockSection .subtitle {
+            color: #a7a9be;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .unlock-row {
+            display: flex;
+            gap: 12px;
+            max-width: 500px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .unlock-row input {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 2px solid #2a2a4a;
+            background: #0f0e17;
+            color: #fffffe;
+            font-size: 18px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .unlock-row input:focus {
+            border-color: #ff8906;
+        }
+
+        .unlock-row input::placeholder {
+            color: #555;
+        }
+
+        .unlock-row .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-unlock {
+            background: #ff8906;
+            color: #0f0e17;
+        }
+
+        .btn-unlock:hover {
+            background: #e67a00;
+            transform: scale(1.02);
+        }
+
+        .btn-lock {
+            background: #2a2a4a;
+            color: #fffffe;
+        }
+
+        .btn-lock:hover {
+            background: #3a3a5a;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-left: 10px;
+        }
+
+        .status-locked {
+            background: #e94560;
+            color: white;
+        }
+
+        .status-unlocked {
+            background: #2cb67d;
+            color: #0f0e17;
+        }
+
+        /* ===== ГЕНЕРАТОР ===== */
+        .generator {
+            background: #0f0e17;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            border: 1px solid #2a2a4a;
+        }
+
+        .generator input,
+        .generator select {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 2px solid #2a2a4a;
+            background: #1a1a2e;
+            color: #fffffe;
+            font-size: 15px;
+            flex: 1;
+            min-width: 120px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .generator input:focus,
+        .generator select:focus {
+            border-color: #ff8906;
+        }
+
+        .generator input[type="number"] {
+            max-width: 80px;
+            flex: 0.5;
+        }
+
+        .generator .btn {
+            flex: 0 1 auto;
+        }
+
+        .name-input-wrap {
+            display: flex;
+            gap: 12px;
+            flex: 2;
+            min-width: 200px;
+        }
+
+        .name-input-wrap input {
+            flex: 1;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-success {
+            background: #2cb67d;
+            color: #0f0e17;
+        }
+
+        .btn-success:hover {
+            background: #229b66;
+        }
+
+        .btn-success:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== СПИСОК ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+        }
+
+        .header .badge {
+            background: #2a2a4a;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #a7a9be;
+        }
+
+        .password-list-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0 10px 0;
+            color: #a7a9be;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .password-list-title span {
+            background: #2a2a4a;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        #passwordList {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        #passwordList::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #passwordList::-webkit-scrollbar-track {
+            background: #0f0e17;
+            border-radius: 10px;
+        }
+
+        #passwordList::-webkit-scrollbar-thumb {
+            background: #2a2a4a;
+            border-radius: 10px;
+        }
+
+        .password-item {
+            background: #0f0e17;
+            padding: 14px 18px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #2a2a4a;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .password-item .info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .password-item .info .name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #fffffe;
+        }
+
+        .password-item .info .pass {
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            color: #a7a9be;
+            word-break: break-all;
+            margin-top: 2px;
+            letter-spacing: 0.5px;
+        }
+
+        .password-item .info .date {
+            font-size: 11px;
+            color: #555;
+            margin-top: 2px;
+        }
+
+        .password-item .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn-delete {
+            background: transparent;
+            color: #e94560;
+            border: 1px solid #e94560;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .btn-delete:hover:not(:disabled) {
+            background: #e94560;
+            color: white;
+        }
+
+        .btn-delete:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #a7a9be;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2a2a4a;
+            color: #fffffe;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 16px;
+            z-index: 9999;
+            border: 1px solid #3a3a5a;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+            animation: fadeInUp 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            .generator {
+                flex-direction: column;
+            }
+            .generator input,
+            .generator select,
+            .generator input[type="number"] {
+                max-width: 100%;
+                flex: 1;
+                width: 100%;
+            }
+            .name-input-wrap {
+                flex-direction: column;
+                width: 100%;
+            }
+            .password-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .password-item .actions {
+                justify-content: flex-end;
+            }
+            .unlock-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .unlock-row input {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ===== БЛОК РАЗБЛОКИРОВКИ ===== -->
+        <div id="unlockSection">
+            <span class="lock-icon" id="lockIcon">&#128274;</span>
+            <h2 id="statusTitle">Доступ заблокирован</h2>
+            <p class="subtitle" id="statusSubtitle">Введите мастер-пароль для просмотра паролей</p>
+
+            <div class="unlock-row">
+                <input type="password" id="masterInput" placeholder="Введите мастер-пароль" autofocus>
+                <button class="btn btn-unlock" id="unlockBtn">Разблокировать</button>
+                <button class="btn btn-lock" id="lockBtn" style="display:none;">Заблокировать</button>
+            </div>
+
+            <div style="margin-top:10px;">
+                <span id="statusBadge" class="status-badge status-locked">Заблокировано</span>
+            </div>
+        </div>
+
+        <!-- ===== ГЛАВНОЕ ПРИЛОЖЕНИЕ ===== -->
+        <div id="appScreen">
+
+            <div class="header">
+                <h1>Мои пароли</h1>
+                <span class="badge" id="passCount">0 записей</span>
+            </div>
+
+            <!-- Генератор -->
+            <div class="generator">
+                <div class="name-input-wrap">
+                    <input type="text" id="nameInput" placeholder="Название сайта / сервиса">
+                </div>
+                <input type="number" id="lengthInput" value="16" min="6" max="64">
+                <select id="charsetSelect">
+                    <option value="all">Все символы</option>
+                    <option value="alnum">Буквы + цифры</option>
+                    <option value="alpha">Только буквы</option>
+                    <option value="num">Только цифры</option>
+                </select>
+                <button class="btn btn-success" id="generateBtn" disabled>Сгенерировать</button>
+            </div>
+
+            <div class="password-list-title">
+                <span>Сохранённые пароли</span>
+                <span id="passCount2">0</span>
+            </div>
+
+            <div id="passwordList">
+                <div class="empty-state">
+                    <span class="icon">&#128231;</span>
+                    <p>Паролей пока нет.<br>Сгенерируйте первый!</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const crypto = require('crypto');
+            const fs = require('fs');
+            const path = require('path');
+            const os = require('os');
+
+            // ===== ПАПКА В APP DATA =====
+            const APP_DIR = path.join(os.homedir(), 'AppData', 'Roaming', 'LocalPasses');
+            if (!fs.existsSync(APP_DIR)) {
+                fs.mkdirSync(APP_DIR, { recursive: true });
+            }
+
+            const DATA_FILE = path.join(APP_DIR, 'passwords.dat');
+            const MASTER_FILE = path.join(APP_DIR, 'master.hash');
+
+            const ALGORITHM = 'aes-256-gcm';
+            const IV_LENGTH = 16;
+            const SALT_LENGTH = 32;
+
+            // ===== СОСТОЯНИЕ =====
+            let isUnlocked = false;
+            let masterPassword = '';
+            let passwords = [];
+
+            // ===== КРИПТОГРАФИЯ =====
+
+            function getKey(password, salt) {
+                return crypto.pbkdf2Sync(password, salt, 200000, 32, 'sha256');
+            }
+
+            function hashPassword(password) {
+                return crypto.createHash('sha256').update(password).digest('hex');
+            }
+
+            function encrypt(text, password) {
+                const salt = crypto.randomBytes(SALT_LENGTH);
+                const iv = crypto.randomBytes(IV_LENGTH);
+                const key = getKey(password, salt);
+                const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+                const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
+                const authTag = cipher.getAuthTag();
+                return {
+                    salt: salt.toString('hex'),
+                    iv: iv.toString('hex'),
+                    authTag: authTag.toString('hex'),
+                    data: encrypted.toString('hex')
+                };
+            }
+
+            function decrypt(encryptedData, password) {
+                try {
+                    const salt = Buffer.from(encryptedData.salt, 'hex');
+                    const iv = Buffer.from(encryptedData.iv, 'hex');
+                    const authTag = Buffer.from(encryptedData.authTag, 'hex');
+                    const encrypted = Buffer.from(encryptedData.data, 'hex');
+                    const key = getKey(password, salt);
+                    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+                    decipher.setAuthTag(authTag);
+                    return decipher.update(encrypted) + decipher.final('utf8');
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            // ===== РАБОТА С ФАЙЛАМИ =====
+
+            function saveMasterHash(hash) {
+                fs.writeFileSync(MASTER_FILE, hash, 'utf8');
+            }
+
+            function loadMasterHash() {
+                if (!fs.existsSync(MASTER_FILE)) return null;
+                return fs.readFileSync(MASTER_FILE, 'utf8');
+            }
+
+            function savePasswordsData(passwords, password) {
+                const json = JSON.stringify(passwords, null, 2);
+                const encrypted = encrypt(json, password);
+                fs.writeFileSync(DATA_FILE, JSON.stringify(encrypted), 'utf8');
+            }
+
+            function loadPasswordsData(password) {
+                if (!fs.existsSync(DATA_FILE)) return [];
+                try {
+                    const raw = fs.readFileSync(DATA_FILE, 'utf8');
+                    const encrypted = JSON.parse(raw);
+                    const json = decrypt(encrypted, password);
+                    if (json === null) return null;
+                    return JSON.parse(json);
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            // ===== DOM-ЭЛЕМЕНТЫ =====
+
+            const masterInput = document.getElementById('masterInput');
+            const unlockBtn = document.getElementById('unlockBtn');
+            const lockBtn = document.getElementById('lockBtn');
+            const lockIcon = document.getElementById('lockIcon');
+            const statusTitle = document.getElementById('statusTitle');
+            const statusSubtitle = document.getElementById('statusSubtitle');
+            const statusBadge = document.getElementById('statusBadge');
+
+            const nameInput = document.getElementById('nameInput');
+            const lengthInput = document.getElementById('lengthInput');
+            const charsetSelect = document.getElementById('charsetSelect');
+            const generateBtn = document.getElementById('generateBtn');
+
+            const passwordList = document.getElementById('passwordList');
+            const passCount = document.getElementById('passCount');
+            const passCount2 = document.getElementById('passCount2');
+
+            // ===== ГЕНЕРАТОР ПАРОЛЕЙ =====
+
+            function generatePassword(length, options) {
+                options = options || {};
+                const useUpper = options.uppercase !== false;
+                const useLower = options.lowercase !== false;
+                const useNumbers = options.numbers !== false;
+                const useSymbols = options.symbols !== false;
+
+                let chars = '';
+                if (useUpper) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                if (useLower) chars += 'abcdefghijklmnopqrstuvwxyz';
+                if (useNumbers) chars += '0123456789';
+                if (useSymbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+                if (chars.length === 0) chars = 'abcdefghijklmnopqrstuvwxyz';
+
+                let password = '';
+                for (let i = 0; i < length; i++) {
+                    password += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return password;
+            }
+
+            // ===== ОТРИСОВКА =====
+
+            function renderPasswords() {
+                if (passwords.length === 0) {
+                    passwordList.innerHTML = `
+                        <div class="empty-state">
+                            <span class="icon">&#128231;</span>
+                            <p>Паролей пока нет.<br>Сгенерируйте первый!</p>
+                        </div>
+                    `;
+                    passCount.textContent = '0 записей';
+                    passCount2.textContent = '0';
+                    return;
+                }
+
+                let html = '';
+                passwords.forEach((item, index) => {
+                    const name = escapeHtml(item.name || 'Без названия');
+                    const pass = escapeHtml(item.password || '');
+                    const date = item.created ? new Date(item.created).toLocaleDateString() : '';
+
+                    html += `
+                        <div class="password-item">
+                            <div class="info">
+                                <div class="name">${name}</div>
+                                <div class="pass">${pass}</div>
+                                ${date ? `<div class="date">${date}</div>` : ''}
+                            </div>
+                            <div class="actions">
+                                <button class="btn-delete" data-index="${index}" ${isUnlocked ? '' : 'disabled'}>Удалить</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                passwordList.innerHTML = html;
+                passCount.textContent = passwords.length + ' записей';
+                passCount2.textContent = passwords.length;
+
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        if (!isUnlocked) {
+                            showToast('Сначала разблокируйте доступ');
+                            return;
+                        }
+                        const idx = parseInt(this.dataset.index);
+                        deletePassword(idx);
+                    });
+                });
+            }
+
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // ===== ДЕЙСТВИЯ =====
+
+            function deletePassword(index) {
+                if (!isUnlocked) {
+                    showToast('Сначала разблокируйте доступ');
+                    return;
+                }
+                if (!confirm('Удалить пароль "' + (passwords[index].name || 'без названия') + '"?')) return;
+                passwords.splice(index, 1);
+                savePasswordsData(passwords, masterPassword);
+                renderPasswords();
+                showToast('Пароль удалён');
+            }
+
+            function addPassword(name, password) {
+                passwords.push({
+                    name: name.trim() || 'Без названия',
+                    password: password,
+                    created: new Date().toISOString()
+                });
+                savePasswordsData(passwords, masterPassword);
+                renderPasswords();
+            }
+
+            function generateAndAdd() {
+                if (!isUnlocked) {
+                    showToast('Сначала разблокируйте доступ');
+                    return;
+                }
+                const name = nameInput.value.trim() || 'Новый пароль';
+                const length = parseInt(lengthInput.value) || 16;
+
+                const charset = charsetSelect.value;
+                let options = {};
+                if (charset === 'alnum') {
+                    options = { uppercase: true, lowercase: true, numbers: true, symbols: false };
+                } else if (charset === 'alpha') {
+                    options = { uppercase: true, lowercase: true, numbers: false, symbols: false };
+                } else if (charset === 'num') {
+                    options = { uppercase: false, lowercase: false, numbers: true, symbols: false };
+                } else {
+                    options = { uppercase: true, lowercase: true, numbers: true, symbols: true };
+                }
+
+                const password = generatePassword(length, options);
+                addPassword(name, password);
+                nameInput.value = '';
+                showToast('Пароль сохранён');
+            }
+
+            // ===== РАЗБЛОКИРОВКА / БЛОКИРОВКА =====
+
+            function unlock() {
+                const input = masterInput.value.trim();
+                if (!input) {
+                    showToast('Введите мастер-пароль');
+                    return;
+                }
+
+                // Проверяем мастер-пароль
+                const savedHash = loadMasterHash();
+                if (!savedHash) {
+                    // Первый запуск — сохраняем хеш
+                    saveMasterHash(hashPassword(input));
+                } else {
+                    if (hashPassword(input) !== savedHash) {
+                        showToast('Неверный пароль');
+                        masterInput.value = '';
+                        masterInput.focus();
+                        return;
+                    }
+                }
+
+                // Пытаемся расшифровать данные
+                const loaded = loadPasswordsData(input);
+                if (loaded === null) {
+                    showToast('Неверный пароль или повреждённые данные');
+                    masterInput.value = '';
+                    masterInput.focus();
+                    return;
+                }
+
+                // Успех!
+                masterPassword = input;
+                passwords = loaded;
+                isUnlocked = true;
+
+                // Обновляем UI
+                lockIcon.textContent = '\u{1F513}';
+                statusTitle.textContent = 'Доступ открыт';
+                statusSubtitle.textContent = 'Пароли видны, удаление доступно';
+                statusBadge.textContent = 'Разблокировано';
+                statusBadge.className = 'status-badge status-unlocked';
+
+                unlockBtn.style.display = 'none';
+                lockBtn.style.display = 'inline-block';
+                masterInput.value = '';
+                masterInput.placeholder = 'Доступ открыт';
+
+                generateBtn.disabled = false;
+                renderPasswords();
+                showToast('Доступ открыт');
+            }
+
+            function lock() {
+                isUnlocked = false;
+                masterPassword = '';
+                passwords = [];
+
+                lockIcon.textContent = '\u{1F512}';
+                statusTitle.textContent = 'Доступ заблокирован';
+                statusSubtitle.textContent = 'Введите мастер-пароль для просмотра паролей';
+                statusBadge.textContent = 'Заблокировано';
+                statusBadge.className = 'status-badge status-locked';
+
+                unlockBtn.style.display = 'inline-block';
+                lockBtn.style.display = 'none';
+                masterInput.value = '';
+                masterInput.placeholder = 'Введите мастер-пароль';
+
+                generateBtn.disabled = true;
+                renderPasswords();
+                showToast('Доступ заблокирован');
+            }
+
+            // ===== TOAST =====
+
+            function showToast(msg) {
+                const old = document.querySelector('.toast');
+                if (old) old.remove();
+
+                const div = document.createElement('div');
+                div.className = 'toast';
+                div.textContent = msg;
+                document.body.appendChild(div);
+
+                setTimeout(() => {
+                    div.style.opacity = '0';
+                    div.style.transition = 'opacity 0.4s';
+                    setTimeout(() => div.remove(), 500);
+                }, 2500);
+            }
+
+            // ===== СОБЫТИЯ =====
+
+            unlockBtn.addEventListener('click', unlock);
+            lockBtn.addEventListener('click', lock);
+
+            masterInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    if (isUnlocked) {
+                        lock();
+                    } else {
+                        unlock();
+                    }
+                }
+            });
+
+            generateBtn.addEventListener('click', generateAndAdd);
+
+            nameInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    generateBtn.click();
+                }
+            });
+
+            lengthInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    generateBtn.click();
+                }
+            });
+
+            // ===== ПРИ ЗАПУСКЕ =====
+
+            // Если есть сохранённый мастер-пароль — просто ждём ввода
+            if (loadMasterHash()) {
+                // Есть пароль
+            } else {
+                statusSubtitle.textContent = 'Первый запуск! Придумайте мастер-пароль.';
+            }
+
+            // Всегда начинаем с заблокированного состояния
+            lock();
+
+            masterInput.focus();
+
+        })();
+    </script>
+
+</body>
+</html>
